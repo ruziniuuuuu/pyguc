@@ -1,0 +1,63 @@
+[build-system]
+requires = ["uv_build>=0.12.5,<0.13"]
+build-backend = "uv_build"
+
+[project]
+name = "pyguc"
+version = "0.1.0"
+description = "A robust, minimal glTF to OpenUSD converter"
+readme = "README.md"
+requires-python = ">=3.12,<3.15"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+authors = [{ name = "ruziniuuuuu" }]
+keywords = ["gltf", "usd", "openusd", "3d"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Typing :: Typed",
+]
+dependencies = [
+  "numpy>=2,<3",
+  "pillow>=11,<13",
+  "usd-core>=26.8,<26.9",
+]
+
+[project.urls]
+Documentation = "https://ruziniuuuuu.github.io/pyguc/"
+Issues = "https://github.com/ruziniuuuuu/pyguc/issues"
+Repository = "https://github.com/ruziniuuuuu/pyguc"
+
+[project.scripts]
+pyguc = "pyguc._cli:main"
+
+[dependency-groups]
+dev = [
+  "hypothesis>=6.138,<7",
+  "prek>=0.4.14,<0.5",
+  "pytest>=8.4,<10",
+  "pytest-cov>=6.2,<8",
+  "ruff>=0.12,<0.17",
+  "ty>=0.0.1a24,<0.1",
+]
+
+[tool.pytest.ini_options]
+addopts = "--strict-config --strict-markers --cov=pyguc --cov-branch --cov-report=term-missing --cov-fail-under=90"
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["A", "B", "C4", "E", "F", "I", "N", "PERF", "PIE", "PTH", "RUF", "SIM", "UP", "W"]
+ignore = ["N818"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101"]
+
+[tool.ty.src]
+exclude = ["tests"]

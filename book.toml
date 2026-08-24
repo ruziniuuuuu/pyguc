@@ -1,0 +1,11 @@
+[book]
+title = "pyguc"
+authors = ["ruziniuuuuu"]
+language = "en"
+src = "docs"
+
+[build]
+build-dir = "book"
+
+[output.html]
+git-repository-url = "https://github.com/ruziniuuuuu/pyguc"
