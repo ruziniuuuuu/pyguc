@@ -67,7 +67,7 @@ class Budget:
 class ResourceReader:
     """Read one source and its local resources through anchored file handles."""
 
-    __slots__ = ("_base_fd", "_budget", "_cache", "_source_fd", "base", "source")
+    __slots__ = ("_base_fd", "_budget", "_cache", "_closed", "_source_fd", "base", "source")
 
     def __init__(self, source: Path, budget: Budget) -> None:
         self.source = source.expanduser().resolve(strict=True)
@@ -75,6 +75,7 @@ class ResourceReader:
         self._budget = budget
         self._cache: dict[str, tuple[bytes, str | None]] = {}
         self._base_fd: int | None = None
+        self._closed = False
         if os.name == "nt":
             self._source_fd = os.open(self.source, os.O_RDONLY | getattr(os, "O_BINARY", 0))
         else:
@@ -97,17 +98,24 @@ class ResourceReader:
         exc_value: BaseException | None,
         traceback: TracebackType | None,
     ) -> None:
-        os.close(self._source_fd)
-        if self._base_fd is not None:
-            os.close(self._base_fd)
-            self._base_fd = None
+        if self._closed:
+            return
+        self._closed = True
+        try:
+            os.close(self._source_fd)
+        finally:
+            if self._base_fd is not None:
+                os.close(self._base_fd)
+                self._base_fd = None
 
     def read_source(self) -> bytes:
+        self._ensure_open()
         data = _read_bounded(self._source_fd)
         self._budget.charge_resource(len(data))
         return data
 
     def read_uri(self, uri: str, allowed_data_types: set[str]) -> tuple[bytes, str | None]:
+        self._ensure_open()
         cached = self._cache.get(uri)
         if cached is not None:
             return cached
@@ -118,6 +126,10 @@ class ResourceReader:
         self._budget.charge_resource(len(result[0]))
         self._cache[uri] = result
         return result
+
+    def _ensure_open(self) -> None:
+        if self._closed:
+            raise RuntimeError("resource reader is closed")
 
     def _read_data_uri(self, uri: str, allowed_data_types: set[str]) -> tuple[bytes, str | None]:
         header, separator, payload = uri.partition(",")

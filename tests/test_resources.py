@@ -143,6 +143,21 @@ def test_closed_reader_rejects_local_resource(tmp_path: Path) -> None:
         resources.read_uri("data.bin", {"application/octet-stream"})
 
 
+def test_closed_reader_rejects_source_and_cached_resources(tmp_path: Path) -> None:
+    source = tmp_path / "source.gltf"
+    source.write_bytes(b"{}")
+    (tmp_path / "data.bin").write_bytes(b"data")
+    resources = ResourceReader(source, Budget())
+    resources.read_uri("data.bin", {"application/octet-stream"})
+    resources.__exit__(None, None, None)
+    resources.__exit__(None, None, None)
+
+    with pytest.raises(RuntimeError, match="closed"):
+        resources.read_source()
+    with pytest.raises(RuntimeError, match="closed"):
+        resources.read_uri("data.bin", {"application/octet-stream"})
+
+
 def test_empty_relative_path_is_rejected() -> None:
     with pytest.raises(ValueError, match="empty"):
         resource_module._open_relative(0, ())
