@@ -4,3 +4,4 @@
 - [Usage](usage.md)
 - [Supported features](features.md)
 - [Troubleshooting](troubleshooting.md)
+- [Acknowledgements](acknowledgements.md)
